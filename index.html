@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- SEO Principal -->
+  <title>Contador de Horas por Tarea | Registra y Calcula tu Tiempo Gratis</title>
+  <meta name="description" content="Contador de horas online gratuito. Registra el inicio y fin de cada tarea y calcula automáticamente la duración total de tu jornada laboral. Fácil, rápido y sin registro." />
+  <meta name="keywords" content="contador de horas, contador de horas trabajadas, calcular horas de trabajo, registro de horas, control de tiempo, horas por tarea, calculadora de horas" />
+  <meta name="robots" content="index, follow" />
+  <meta name="author" content="Contador de Horas" />
+
+  <!-- Open Graph (WhatsApp, Facebook, LinkedIn) -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Contador de Horas por Tarea | Registra tu Tiempo Gratis" />
+  <meta property="og:description" content="Registra el inicio y fin de cada tarea y calcula automáticamente el total de horas trabajadas. Gratis, sin registro y fácil de usar." />
+  <meta property="og:image" content="favicon.svg" />
+  <meta property="og:locale" content="es_ES" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Contador de Horas por Tarea | Registra tu Tiempo Gratis" />
+  <meta name="twitter:description" content="Registra el inicio y fin de cada tarea y calcula automáticamente el total de horas trabajadas. Gratis, sin registro y fácil de usar." />
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="shortcut icon" href="favicon.svg" />
+
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <div class="app">
+    <div class="header">
+      <h1>Contador de horas por tarea</h1>
+      <p>Registra el inicio y fin de cada tarea para calcular su duración automáticamente.</p>
+    </div>
+
+    <!-- SELECTOR DE FORMATO -->
+    <div class="format-selector">
+      <span class="format-label">Formato de hora:</span>
+      <div class="toggle-group">
+        <button class="toggle-btn active" id="btn-24" onclick="setFormat(24)">24 hrs</button>
+        <button class="toggle-btn" id="btn-12" onclick="setFormat(12)">12 hrs (AM/PM)</button>
+      </div>
+    </div>
+
+    <div class="form-card">
+      <h2>Nueva tarea</h2>
+      <div class="form-group">
+        <label for="task-name">Nombre de la tarea</label>
+        <input type="text" id="task-name" placeholder="Ej: Generar código para migración" />
+      </div>
+
+      <div class="time-row">
+
+        <!-- HORA INICIO -->
+        <div class="form-group">
+          <label>Hora de inicio</label>
+          <div class="time-input-wrap">
+            <select id="start-h" class="select-hour"></select>
+            <span class="colon">:</span>
+            <select id="start-m" class="select-min"></select>
+            <select id="start-ampm" class="select-ampm hidden">
+              <option value="AM">AM</option>
+              <option value="PM">PM</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- HORA FIN -->
+        <div class="form-group">
+          <label>Hora de fin</label>
+          <div class="time-input-wrap">
+            <select id="end-h" class="select-hour"></select>
+            <span class="colon">:</span>
+            <select id="end-m" class="select-min"></select>
+            <select id="end-ampm" class="select-ampm hidden">
+              <option value="AM">AM</option>
+              <option value="PM">PM</option>
+            </select>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="error-msg" id="error-msg">
+        Por favor verifica que la hora de fin sea mayor a la de inicio.
+      </div>
+      <button class="btn-add" onclick="addTask()">Agregar tarea</button>
+    </div>
+
+    <div class="tasks-header">
+      <h2>Tareas registradas</h2>
+      <div class="tasks-controls">
+        <span class="badge-count" id="task-count">0 tareas</span>
+        <button class="btn-clear" onclick="clearAll()">Limpiar todo</button>
+      </div>
+    </div>
+
+    <div id="tasks-list">
+      <div class="empty-state" id="empty-state">
+        <div class="icon">🕐</div>
+        Aún no hay tareas registradas.<br />Agrega tu primera tarea arriba.
+      </div>
+    </div>
+
+    <div class="stats-row" id="stats-row" style="display: none;">
+      <div class="stat-card">
+        <div class="stat-label">Total de horas trabajadas</div>
+        <div class="stat-value" id="stat-total">0h 0m</div>
+        <div class="stat-sub" id="stat-total-min">0 minutos en total</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Tarea más larga</div>
+        <div class="stat-value" id="stat-longest">—</div>
+        <div class="stat-sub" id="stat-longest-name">—</div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
