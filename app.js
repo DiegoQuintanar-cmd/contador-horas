@@ -2,22 +2,28 @@
 let tasks = [];
 let currentFormat = 24;
 
-// ===== INICIALIZAR DROPDOWNS AL CARGAR =====
+// ===== INICIALIZAR AL CARGAR =====
 window.addEventListener('DOMContentLoaded', () => {
   buildHourOptions(24);
   buildMinuteOptions();
+  buildSecondOptions();
   setFormat(24);
+  setDefaultDates();
 });
+
+// ===== FECHA DE HOY POR DEFECTO =====
+function setDefaultDates() {
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('start-date').value = today;
+  document.getElementById('end-date').value   = today;
+}
 
 // ===== CONSTRUIR OPCIONES DE HORA =====
 function buildHourOptions(format) {
-  const selectors = ['start-h', 'end-h'];
-  selectors.forEach(id => {
+  ['start-h', 'end-h'].forEach(id => {
     const sel = document.getElementById(id);
     sel.innerHTML = '';
-
     if (format === 24) {
-      // 00 a 23
       for (let i = 0; i <= 23; i++) {
         const opt = document.createElement('option');
         opt.value = i;
@@ -25,7 +31,6 @@ function buildHourOptions(format) {
         sel.appendChild(opt);
       }
     } else {
-      // 01 a 12
       for (let i = 1; i <= 12; i++) {
         const opt = document.createElement('option');
         opt.value = i;
@@ -36,10 +41,22 @@ function buildHourOptions(format) {
   });
 }
 
-// ===== CONSTRUIR OPCIONES DE MINUTOS (00-59) =====
+// ===== CONSTRUIR OPCIONES DE MINUTOS Y SEGUNDOS (00-59) =====
 function buildMinuteOptions() {
-  const selectors = ['start-m', 'end-m'];
-  selectors.forEach(id => {
+  ['start-m', 'end-m'].forEach(id => {
+    const sel = document.getElementById(id);
+    sel.innerHTML = '';
+    for (let i = 0; i <= 59; i++) {
+      const opt = document.createElement('option');
+      opt.value = i;
+      opt.textContent = String(i).padStart(2, '0');
+      sel.appendChild(opt);
+    }
+  });
+}
+
+function buildSecondOptions() {
+  ['start-s', 'end-s'].forEach(id => {
     const sel = document.getElementById(id);
     sel.innerHTML = '';
     for (let i = 0; i <= 59; i++) {
@@ -54,67 +71,80 @@ function buildMinuteOptions() {
 // ===== CAMBIAR FORMATO =====
 function setFormat(format) {
   currentFormat = format;
-
   document.getElementById('btn-24').classList.toggle('active', format === 24);
   document.getElementById('btn-12').classList.toggle('active', format === 12);
-
-  // Reconstruir horas según el formato
   buildHourOptions(format);
-
-  // Mostrar/ocultar AM/PM
   ['start-ampm', 'end-ampm'].forEach(id => {
     document.getElementById(id).classList.toggle('hidden', format === 24);
   });
-
-  // Limpiar selects a valor inicial y ocultar error
   resetSelects();
   document.getElementById('error-msg').style.display = 'none';
 }
 
 // ===== RESETEAR SELECTS AL VALOR INICIAL =====
 function resetSelects() {
-  ['start-h', 'end-h', 'start-m', 'end-m'].forEach(id => {
+  ['start-h', 'end-h', 'start-m', 'end-m', 'start-s', 'end-s'].forEach(id => {
     document.getElementById(id).selectedIndex = 0;
   });
   document.getElementById('start-ampm').value = 'AM';
   document.getElementById('end-ampm').value   = 'AM';
+  setDefaultDates();
 }
 
-// ===== OBTENER MINUTOS TOTALES DESDE LOS SELECTS =====
-function getMinutes(prefix) {
-  let h = parseInt(document.getElementById(prefix + '-h').value);
-  const m = parseInt(document.getElementById(prefix + '-m').value);
+// ===== OBTENER TIMESTAMP EN SEGUNDOS DESDE LOS INPUTS =====
+function getTotalSeconds(prefix) {
+  const dateVal = document.getElementById(prefix + '-date').value;
+  let h         = parseInt(document.getElementById(prefix + '-h').value);
+  const m       = parseInt(document.getElementById(prefix + '-m').value);
+  const s       = parseInt(document.getElementById(prefix + '-s').value);
 
   if (currentFormat === 12) {
     const ampm = document.getElementById(prefix + '-ampm').value;
-    h = h % 12; // 12 AM → 0, 12 PM → 12
+    h = h % 12;
     if (ampm === 'PM') h += 12;
   }
 
-  return h * 60 + m;
+  // dateVal is YYYY-MM-DD; build ISO string to avoid timezone offset issues
+  const dt = new Date(`${dateVal}T${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`);
+  return Math.floor(dt.getTime() / 1000);
 }
 
-// ===== FORMATEAR ETIQUETA DE HORA PARA LA TARJETA =====
+// ===== FORMATEAR ETIQUETA DE FECHA+HORA PARA LA TARJETA =====
 function formatTimeLabel(prefix) {
-  const h = document.getElementById(prefix + '-h').value;
-  const m = document.getElementById(prefix + '-m').value;
-  const hStr = String(h).padStart(2, '0');
-  const mStr = String(m).padStart(2, '0');
+  const dateVal = document.getElementById(prefix + '-date').value; // YYYY-MM-DD
+  const h       = document.getElementById(prefix + '-h').value;
+  const m       = document.getElementById(prefix + '-m').value;
+  const s       = document.getElementById(prefix + '-s').value;
+  const hStr    = String(h).padStart(2, '0');
+  const mStr    = String(m).padStart(2, '0');
+  const sStr    = String(s).padStart(2, '0');
 
+  // Convertir YYYY-MM-DD → DD/MM/YYYY
+  const [y, mo, d] = dateVal.split('-');
+  const dateStr = `${d}/${mo}/${y}`;
+
+  let timeStr;
   if (currentFormat === 24) {
-    return hStr + ':' + mStr + ' hrs';
+    timeStr = `${hStr}:${mStr}:${sStr}`;
   } else {
     const ampm = document.getElementById(prefix + '-ampm').value;
-    return hStr + ':' + mStr + ' ' + ampm;
+    timeStr = `${hStr}:${mStr}:${sStr} ${ampm}`;
   }
+
+  return `${dateStr} ${timeStr}`;
 }
 
-// ===== FORMATEAR DURACIÓN =====
-function formatDuration(mins) {
-  if (mins < 60) return mins + ' min';
-  const h = Math.floor(mins / 60);
-  const m = mins % 60;
-  return m === 0 ? h + 'h' : h + 'h ' + m + 'm';
+// ===== FORMATEAR DURACIÓN (d / h / m / s) =====
+function formatDuration(secs) {
+  const d = Math.floor(secs / 86400);
+  const h = Math.floor((secs % 86400) / 3600);
+  const m = Math.floor((secs % 3600) / 60);
+  const s = secs % 60;
+
+  if (d > 0) return `${d}d ${h}h ${m}m ${s}s`;
+  if (h > 0) return `${h}h ${m}m ${s}s`;
+  if (m > 0) return `${m}m ${s}s`;
+  return `${s}s`;
 }
 
 // ===== ESCAPAR HTML =====
@@ -138,24 +168,32 @@ function addTask() {
     return;
   }
 
-  const startMin = getMinutes('start');
-  const endMin   = getMinutes('end');
+  const startDate = document.getElementById('start-date').value;
+  const endDate   = document.getElementById('end-date').value;
 
-  if (endMin <= startMin) {
+  if (!startDate || !endDate) {
     errorMsg.style.display = 'block';
-    errorMsg.textContent = 'La hora de fin debe ser mayor a la hora de inicio.';
+    errorMsg.textContent = 'Por favor selecciona las fechas de inicio y fin.';
+    return;
+  }
+
+  const startSecs = getTotalSeconds('start');
+  const endSecs   = getTotalSeconds('end');
+
+  if (endSecs <= startSecs) {
+    errorMsg.style.display = 'block';
+    errorMsg.textContent = 'La fecha y hora de fin deben ser mayores a las de inicio.';
     return;
   }
 
   errorMsg.style.display = 'none';
 
-  const duration   = endMin - startMin;
+  const duration   = endSecs - startSecs;
   const startLabel = formatTimeLabel('start');
   const endLabel   = formatTimeLabel('end');
 
   tasks.push({ id: Date.now(), name, startLabel, endLabel, duration });
 
-  // Limpiar formulario
   nameInput.value = '';
   resetSelects();
   nameInput.focus();
@@ -204,7 +242,10 @@ function renderTasks() {
       <div class="task-dot"></div>
       <div class="task-info">
         <div class="task-name">${escHtml(t.name)}</div>
-        <div class="task-times">Inicio: ${t.startLabel} &nbsp;→&nbsp; Fin: ${t.endLabel}</div>
+        <div class="task-times">
+          Inicio: ${t.startLabel}<br>
+          Fin: ${t.endLabel}
+        </div>
       </div>
       <div class="task-duration">
         <div class="duration-value">${formatDuration(t.duration)}</div>
@@ -215,15 +256,57 @@ function renderTasks() {
     list.appendChild(div);
   });
 
-  const totalMins = tasks.reduce((sum, t) => sum + t.duration, 0);
+  const totalSecs = tasks.reduce((sum, t) => sum + t.duration, 0);
   const longest   = tasks.reduce((a, b) => a.duration > b.duration ? a : b);
 
-  document.getElementById('stat-total').textContent        = formatDuration(totalMins);
-  document.getElementById('stat-total-min').textContent    = totalMins + ' minutos en total';
-  document.getElementById('stat-longest').textContent      = formatDuration(longest.duration);
+  document.getElementById('stat-total').textContent      = formatDuration(totalSecs);
+  document.getElementById('stat-total-sec').textContent  = totalSecs + ' segundos en total';
+  document.getElementById('stat-longest').textContent    = formatDuration(longest.duration);
   document.getElementById('stat-longest-name').textContent = longest.name;
 
   statsRow.style.display = 'grid';
+}
+
+// ===== COPIAR RESUMEN AL PORTAPAPELES =====
+function copyStat(type, btn) {
+  let text;
+  if (type === 'total') {
+    const value = document.getElementById('stat-total').textContent;
+    const secs  = document.getElementById('stat-total-sec').textContent;
+    text = `Total de horas trabajadas: ${value}\n(${secs})`;
+  } else {
+    const value = document.getElementById('stat-longest').textContent;
+    const name  = document.getElementById('stat-longest-name').textContent;
+    text = `Tarea más larga: ${name}\nDuración: ${value}`;
+  }
+
+  const showCopied = () => {
+    const original = btn.textContent;
+    btn.textContent = '✓ Copiado';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = original;
+      btn.classList.remove('copied');
+    }, 2000);
+  };
+
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(showCopied).catch(() => fallbackCopy(text, showCopied));
+  } else {
+    fallbackCopy(text, showCopied);
+  }
+}
+
+function fallbackCopy(text, callback) {
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.cssText = 'position:fixed;opacity:0;pointer-events:none;';
+  document.body.appendChild(ta);
+  ta.focus();
+  ta.select();
+  try { document.execCommand('copy'); } catch (e) {}
+  document.body.removeChild(ta);
+  callback();
 }
 
 // ===== ENTER PARA AGREGAR =====

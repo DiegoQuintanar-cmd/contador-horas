@@ -156,6 +156,7 @@ body {
 /* ===== SELECTS DE HORA Y MINUTOS ===== */
 .select-hour,
 .select-min,
+.select-sec,
 .select-ampm {
   height: 40px;
   padding: 0 8px;
@@ -181,6 +182,10 @@ body {
   width: 72px;
 }
 
+.select-sec {
+  width: 72px;
+}
+
 .select-ampm {
   width: 70px;
   background: #eeedfe;
@@ -191,6 +196,7 @@ body {
 
 .select-hour:focus,
 .select-min:focus,
+.select-sec:focus,
 .select-ampm:focus {
   border-color: #534AB7;
   box-shadow: 0 0 0 3px rgba(83, 74, 183, 0.12);
@@ -208,6 +214,69 @@ body {
   line-height: 1;
   padding: 0 2px;
   user-select: none;
+}
+
+/* ===== DATE INPUT ===== */
+.input-date {
+  width: 100%;
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid #d0cdf0;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  background: #fafafa;
+  color: #1a1a2e;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.input-date:focus {
+  border-color: #534AB7;
+  box-shadow: 0 0 0 3px rgba(83, 74, 183, 0.12);
+  background: #ffffff;
+}
+
+.input-date::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.6;
+  filter: invert(30%) sepia(60%) saturate(600%) hue-rotate(220deg);
+}
+
+.date-time-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* ===== COPY BUTTON ===== */
+.btn-copy {
+  margin-top: 10px;
+  align-self: flex-start;
+  background: none;
+  border: 1px solid #b8b2e0;
+  border-radius: 6px;
+  padding: 4px 14px;
+  font-size: 12px;
+  font-family: inherit;
+  font-weight: 600;
+  color: #6b5eb5;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-copy:hover {
+  background: #534AB7;
+  color: #ffffff;
+  border-color: #534AB7;
+}
+
+.btn-copy.copied {
+  background: #1e8c5a;
+  color: #ffffff;
+  border-color: #1e8c5a;
+  pointer-events: none;
 }
 
 /* ===== HELPER ===== */
@@ -354,6 +423,8 @@ body {
   font-size: 12px;
   color: #9898b0;
   margin-top: 3px;
+  white-space: normal;
+  line-height: 1.5;
 }
 
 .task-duration { text-align: right; flex-shrink: 0; }
@@ -403,6 +474,8 @@ body {
   background: #eeedfe;
   border-radius: 12px;
   padding: 1.1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
 }
 
 .stat-label {
